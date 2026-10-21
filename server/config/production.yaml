@@ -1,0 +1,19 @@
+host: "0.0.0.0"
+port: 8000
+whisper_model: "tiny"
+whisper_vad_filter: false
+whisper_beam_size: 5
+whisper_device: "cpu"
+whisper_compute_type: "int8"
+audio_window_seconds: 5
+storage_dir: "uploads"
+log_level: "INFO"
+max_clients: 100
+telemetry_interval_seconds: 5
+
+# Insight pipeline: speech -> AI judgement -> memory / task
+extraction_enabled: true
+extraction_model: "google/gemma-4-26b-a4b-it:free"
+importance_threshold: 0.4
+extraction_min_chars: 80
+extraction_max_wait_seconds: 25

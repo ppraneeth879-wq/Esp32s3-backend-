@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LifeLogActionUpdated",
+  "description": "Emitted when a task is completed, dismissed or edited from any client, so every connected client stays in sync.",
+  "type": "object",
+  "required": ["type", "action"],
+  "properties": {
+    "type": { "const": "action_updated" },
+    "action": {
+      "type": "object",
+      "required": ["id", "title", "status"],
+      "properties": {
+        "id": { "type": "integer" },
+        "memory_id": { "type": ["integer", "null"] },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "action_type": { "type": "string" },
+        "priority": { "enum": ["high", "medium", "low"] },
+        "status": { "enum": ["pending", "completed", "dismissed"] },
+        "confidence": { "type": ["number", "null"] },
+        "due_date": { "type": ["string", "null"] },
+        "source": { "type": ["string", "null"] },
+        "session_id": { "type": ["string", "null"] },
+        "created_at": { "type": ["number", "null"] },
+        "completed_at": { "type": ["number", "null"] }
+      }
+    }
+  }
+}

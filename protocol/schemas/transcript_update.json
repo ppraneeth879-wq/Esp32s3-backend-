@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TranscriptUpdate",
+  "type": "object",
+  "required": ["type", "session_id", "device_id", "sequence", "timestamp_ms", "text", "is_final"],
+  "properties": {
+    "type": { "const": "transcript" },
+    "session_id": { "type": "string", "format": "uuid" },
+    "device_id": { "type": "string", "format": "uuid" },
+    "sequence": { "type": "integer", "minimum": 0 },
+    "timestamp_ms": { "type": "integer", "minimum": 0 },
+    "text": { "type": "string" },
+    "is_final": { "type": "boolean" }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Heartbeat",
+  "type": "object",
+  "required": ["type", "device_id", "uptime_ms", "rssi", "free_heap", "packets_sent", "queue_usage", "firmware_version"],
+  "properties": {
+    "type": { "const": "heartbeat" },
+    "device_id": { "type": "string", "format": "uuid" },
+    "uptime_ms": { "type": "integer", "minimum": 0 },
+    "rssi": { "type": "integer" },
+    "free_heap": { "type": "integer", "minimum": 0 },
+    "battery": { "type": ["number", "null"] },
+    "packets_sent": { "type": "integer", "minimum": 0 },
+    "queue_usage": { "type": "number", "minimum": 0, "maximum": 1 },
+    "firmware_version": { "type": "string" }
+  }
+}

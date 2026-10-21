@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LifeLogEvents",
+  "oneOf": [
+    { "$ref": "#/$defs/transcript" },
+    { "$ref": "#/$defs/insight" },
+    { "$ref": "#/$defs/action_updated" },
+    { "$ref": "#/$defs/device_connected" },
+    { "$ref": "#/$defs/device_disconnected" },
+    { "$ref": "#/$defs/heartbeat" },
+    { "$ref": "#/$defs/recording_started" },
+    { "$ref": "#/$defs/recording_finished" },
+    { "$ref": "#/$defs/error" },
+    { "$ref": "#/$defs/status" }
+  ],
+  "$defs": {
+    "transcript": {
+      "type": "object",
+      "required": ["type", "session_id", "device_id", "sequence", "timestamp_ms", "text", "is_final"],
+      "properties": {
+        "type": { "const": "transcript" },
+        "session_id": { "type": "string" },
+        "device_id": { "type": "string" },
+        "sequence": { "type": "integer" },
+        "timestamp_ms": { "type": "integer" },
+        "text": { "type": "string" },
+        "is_final": { "type": "boolean" }
+      }
+    },
+    "insight": { "$ref": "insight.json" },
+    "action_updated": { "$ref": "action_updated.json" },
+    "device_connected": {
+      "type": "object",
+      "required": ["type", "device_id", "device_name", "firmware_version", "hardware_revision", "protocol_version"],
+      "properties": {
+        "type": { "const": "device_connected" },
+        "device_id": { "type": "string" },
+        "device_name": { "type": "string" },
+        "firmware_version": { "type": "string" },
+        "hardware_revision": { "type": "string" },
+        "protocol_version": { "type": "integer" }
+      }
+    },
+    "device_disconnected": {
+      "type": "object",
+      "required": ["type", "device_id", "reason"],
+      "properties": {
+        "type": { "const": "device_disconnected" },
+        "device_id": { "type": "string" },
+        "reason": { "type": "string" }
+      }
+    },
+    "heartbeat": { "$ref": "heartbeat.json" },
+    "recording_started": {
+      "type": "object",
+      "required": ["type", "session_id", "device_id", "started_at_ms"],
+      "properties": {
+        "type": { "const": "recording_started" },
+        "session_id": { "type": "string" },
+        "device_id": { "type": "string" },
+        "started_at_ms": { "type": "integer" }
+      }
+    },
+    "recording_finished": {
+      "type": "object",
+      "required": ["type", "session_id", "device_id", "duration_ms"],
+      "properties": {
+        "type": { "const": "recording_finished" },
+        "session_id": { "type": "string" },
+        "device_id": { "type": "string" },
+        "duration_ms": { "type": "integer" }
+      }
+    },
+    "error": {
+      "type": "object",
+      "required": ["type", "code", "message"],
+      "properties": {
+        "type": { "const": "error" },
+        "code": { "type": "string" },
+        "message": { "type": "string" }
+      }
+    },
+    "status": {
+      "type": "object",
+      "required": ["type", "connected_clients", "connected_devices", "recording", "queue_size"],
+      "properties": {
+        "type": { "const": "status" },
+        "connected_clients": { "type": "integer" },
+        "connected_devices": { "type": "integer" },
+        "recording": { "type": "boolean" },
+        "queue_size": { "type": "integer" }
+      }
+    }
+  }
+}

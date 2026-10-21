@@ -1,0 +1,10 @@
+{
+  "session_id": "3d3fc348-e8ee-4306-af07-720e75a8286e",
+  "device_id": "30303030-3030-3030-2d30-3030302d3030",
+  "started_at": "2026-10-19T14:09:49.106285+00:00",
+  "ended_at": "2026-10-19T14:12:58.480557+00:00",
+  "bytes_received": 3237888,
+  "packets_received": 1581,
+  "words": 8,
+  "characters": 31
+}

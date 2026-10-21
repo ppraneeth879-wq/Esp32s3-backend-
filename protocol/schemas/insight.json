@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LifeLogInsight",
+  "description": "Result of the AI assessment of a spoken segment. Emitted when the pipeline decides whether the speech is worth keeping, and what it should become (a memory, a task, or nothing).",
+  "type": "object",
+  "required": ["type", "session_id", "device_id", "ignored", "important", "importance", "category", "summary", "memory", "actions"],
+  "properties": {
+    "type": { "const": "insight" },
+    "session_id": { "type": "string" },
+    "device_id": { "type": "string" },
+    "reason": {
+      "type": "string",
+      "description": "Why the pipeline flushed now: 'size', 'interval' or 'session_end'."
+    },
+    "ignored": {
+      "type": "boolean",
+      "description": "True when the speech was judged not worth storing. 'memory' is null and 'actions' is empty in that case."
+    },
+    "important": { "type": "boolean" },
+    "importance": { "type": "number", "minimum": 0, "maximum": 1 },
+    "category": { "enum": ["task", "memory", "note", "ignore"] },
+    "summary": { "type": "string" },
+    "detail": { "type": "string", "description": "The model's justification for the category." },
+    "memory": { "$ref": "#/$defs/memory" },
+    "actions": { "type": "array", "items": { "$ref": "#/$defs/action" } }
+  },
+  "$defs": {
+    "memory": {
+      "type": "object",
+      "required": ["id", "vector_id", "summary", "category", "important", "importance", "created_at"],
+      "properties": {
+        "id": { "type": "integer" },
+        "vector_id": { "type": "string" },
+        "summary": { "type": "string" },
+        "transcript": { "type": "string", "description": "The raw words that produced this memory." },
+        "category": { "enum": ["task", "memory", "note"] },
+        "important": { "type": "boolean" },
+        "importance": { "type": "number" },
+        "sentiment": { "enum": ["positive", "neutral", "negative"] },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "topics": { "type": "array", "items": { "type": "string" } },
+        "people": { "type": "array", "items": { "type": "string" } },
+        "dates": { "type": "array", "items": { "type": "string" } },
+        "reason": { "type": "string" },
+        "created_at": { "type": "number", "description": "Unix epoch seconds." }
+      }
+    },
+    "action": {
+      "type": "object",
+      "required": ["id", "title", "action_type", "priority", "status"],
+      "properties": {
+        "id": { "type": "integer" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "action_type": { "const": "task" },
+        "priority": { "enum": ["high", "medium", "low"] },
+        "status": { "enum": ["pending", "completed", "dismissed"] },
+        "confidence": { "type": "number" },
+        "due_date": { "type": ["string", "null"] },
+        "memory_id": { "type": ["integer", "null"] }
+      }
+    }
+  }
+}

@@ -1,0 +1,1 @@
+"""LifeLog backend application package."""

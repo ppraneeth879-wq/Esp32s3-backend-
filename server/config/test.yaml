@@ -1,0 +1,10 @@
+host: "127.0.0.1"
+port: 8001
+whisper_model: "tiny"
+whisper_device: "cpu"
+whisper_compute_type: "int8"
+audio_window_seconds: 1
+storage_dir: "test_uploads"
+log_level: "WARNING"
+max_clients: 10
+telemetry_interval_seconds: 5
