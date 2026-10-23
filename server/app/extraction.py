@@ -144,6 +144,35 @@ Schema:
 {
   "important": boolean,
   "importance": number between 0 and 1,
+  "category": "memory" | "note" | "ignore",
+  "summary": "one sentence describing the content",
+  "reason": "short justification for the category chosen",
+  "sentiment": "positive" | "neutral" | "negative",
+  "topics": [string],
+  "tags": [string],
+  "people": [string],
+  "dates": [string]
+}
+
+Decision rules:
+- "memory": a durable fact, preference, decision, plan, relationship fact, or an event worth recalling days later.
+- "note": mildly useful context, but not durable enough to be a memory.
+- "ignore": small talk, filler, greetings, repeated statements, emotional venting with no content, or empty/noise.
+- "important" is true when the category is "memory" and the importance is at least 0.5.
+- Be strict and literal. Never invent anything that was not said.
+- "people": names of people mentioned. Use [] if none.
+- "dates": any dates or times mentioned, as spoken ("tomorrow", "next Friday", "2026-10-20"). Use [] if none.
+- Only ever use information that is present in the speech. Never speculate.
+- If the speech is empty, meaningless, or contains no content, return category "ignore" and importance 0."""
+
+# Task extraction is opt-in. The automated pipeline does not create tasks:
+# the hourly rolling-window summarizer is what turns speech into something
+# actionable, and auto-generated tasks were noisy.
+TASK_SCHEMA_PROMPT = """
+Schema (extended):
+{
+  "important": boolean,
+  "importance": number between 0 and 1,
   "category": "task" | "memory" | "note" | "ignore",
   "summary": "one sentence describing the content",
   "reason": "short justification for the category chosen",
@@ -156,17 +185,16 @@ Schema:
   "action_items": [string]
 }
 
-Decision rules:
+Extra rules for "tasks":
 - "task": the speaker commits to doing something, sets a deadline or a reminder, or states a problem that needs follow-up. Each entry in "tasks" must be one concrete, self-contained imperative statement ("Email Sarah about the invoice", not "Sarah thing").
-- "memory": a durable fact, preference, decision, plan, relationship fact, or an event worth recalling days later. No action implied.
-- "note": mildly useful context, but neither actionable nor durable.
-- "ignore": small talk, filler, greetings, repeated statements, emotional venting with no content, or empty/noise.
-- "important" is true when category is "task" or "memory", or when importance >= 0.5.
-- Be strict and literal. Never invent a task that was not actually stated. If the speech does not clearly express an intent to DO something, it is not a task.
-- "people": names of people mentioned. Use [] if none.
-- "dates": any dates or times mentioned, as spoken ("tomorrow", "next Friday", "2026-10-20"). Use [] if none.
-- Only ever use information that is present in the speech. Never speculate.
-- If the speech is empty, meaningless, or contains no content, return category "ignore" and importance 0."""
+- Only add a task when the speech clearly expresses an intent to DO something."""
+
+
+def build_system_prompt(create_tasks: bool = False) -> str:
+    """The prompt for the model, with or without the task schema."""
+    if create_tasks:
+        return SYSTEM_PROMPT + TASK_SCHEMA_PROMPT
+    return SYSTEM_PROMPT
 
 
 @dataclass
@@ -429,7 +457,12 @@ def heuristic_extract(transcript: str) -> ExtractionResult:
     )
 
 
-def extract(transcript: str, model: str = "", threshold: float = 0.4) -> Optional[ExtractionResult]:
+def extract(
+    transcript: str,
+    model: str = "",
+    threshold: float = 0.4,
+    create_tasks: bool = False,
+) -> Optional[ExtractionResult]:
     """Run the LLM over a speech segment and return a structured judgement.
 
     Falls back to :func:`heuristic_extract` when every model fails.
@@ -439,7 +472,7 @@ def extract(transcript: str, model: str = "", threshold: float = 0.4) -> Optiona
         return None
 
     messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "system", "content": build_system_prompt(create_tasks)},
         {"role": "user", "content": f"SPEECH:\n{text}"},
     ]
 
@@ -449,6 +482,13 @@ def extract(transcript: str, model: str = "", threshold: float = 0.4) -> Optiona
         result = heuristic_extract(text)
     else:
         result = _build_result(data, source="llm")
+
+    if not create_tasks:
+        # The automated pipeline does not create tasks.
+        result.tasks = []
+        result.action_items = []
+        if result.category == CATEGORY_TASK:
+            result.category = CATEGORY_MEMORY
 
     # Below the threshold, downgrade to a plain note so it is still searchable
     # but does not show up as an important item.

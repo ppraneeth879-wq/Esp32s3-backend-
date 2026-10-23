@@ -172,8 +172,11 @@
  C:/Users/Praneeth\ P/.platformio/packages/framework-arduinoespressif32/cores/esp32/io_pin_remap.h \
  C:/Users/Praneeth\ P/.platformio/packages/framework-arduinoespressif32/cores/esp32/Arduino.h \
  include/Config.h \
- C:/Users/Praneeth\ P/.platformio/packages/framework-arduinoespressif32-libs/esp32s3/include/driver/deprecated/driver/i2s.h \
- C:/Users/Praneeth\ P/.platformio/packages/framework-arduinoespressif32-libs/esp32s3/include/esp_common/include/esp_types.h \
- C:/Users/Praneeth\ P/.platformio/packages/framework-arduinoespressif32-libs/esp32s3/include/driver/deprecated/driver/i2s_types_legacy.h \
+ C:/Users/Praneeth\ P/.platformio/packages/framework-arduinoespressif32/libraries/ESP_I2S/src/ESP_I2S.h \
+ C:/Users/Praneeth\ P/.platformio/packages/framework-arduinoespressif32-libs/esp32s3/include/esp_driver_i2s/include/driver/i2s_std.h \
  C:/Users/Praneeth\ P/.platformio/packages/framework-arduinoespressif32-libs/esp32s3/include/hal/include/hal/i2s_types.h \
- C:/Users/Praneeth\ P/.platformio/packages/framework-arduinoespressif32-libs/esp32s3/include/esp_driver_i2s/include/driver/i2s_types.h
+ C:/Users/Praneeth\ P/.platformio/packages/framework-arduinoespressif32-libs/esp32s3/include/esp_driver_i2s/include/driver/i2s_common.h \
+ C:/Users/Praneeth\ P/.platformio/packages/framework-arduinoespressif32-libs/esp32s3/include/esp_driver_i2s/include/driver/i2s_types.h \
+ C:/Users/Praneeth\ P/.platformio/packages/framework-arduinoespressif32-libs/esp32s3/include/esp_common/include/esp_types.h \
+ C:/Users/Praneeth\ P/.platformio/packages/framework-arduinoespressif32-libs/esp32s3/include/esp_driver_i2s/include/driver/i2s_tdm.h \
+ C:/Users/Praneeth\ P/.platformio/packages/framework-arduinoespressif32-libs/esp32s3/include/esp_driver_i2s/include/driver/i2s_pdm.h

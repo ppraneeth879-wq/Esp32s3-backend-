@@ -17,8 +17,18 @@ def get_conn() -> sqlite3.Connection:
     parent = DB_PATH.parent
     if str(parent) not in ("", "."):
         parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
+    # A busy timeout plus WAL means the background Google sync can write
+    # without blocking a request that is reading. Without it, a write in
+    # progress makes every reader wait, and because the readers run on the
+    # event loop, the whole server stalls.
+    conn = sqlite3.connect(DB_PATH, timeout=15.0, check_same_thread=False)
     conn.row_factory = sqlite3.Row
+    try:
+        conn.execute("PRAGMA journal_mode=WAL")
+        conn.execute("PRAGMA busy_timeout=15000")
+        conn.execute("PRAGMA synchronous=NORMAL")
+    except sqlite3.Error:
+        pass
     return conn
 
 
@@ -32,6 +42,13 @@ _MEMORIES_MIGRATIONS = [
     ("source", "TEXT DEFAULT 'llm'"),
     ("session_id", "TEXT DEFAULT ''"),
     ("content_hash", "TEXT DEFAULT ''"),
+    # Google-sourced entries (calendar events, important mail).
+    ("external_id", "TEXT DEFAULT ''"),
+    ("starts_at", "REAL"),
+    ("ends_at", "REAL"),
+    ("location", "TEXT DEFAULT ''"),
+    ("status", "TEXT DEFAULT ''"),
+    ("link", "TEXT DEFAULT ''"),
 ]
 
 _ACTIONS_MIGRATIONS = [
@@ -99,6 +116,10 @@ def init_db() -> None:
     _apply_migrations(c, "actions", _ACTIONS_MIGRATIONS)
     c.execute("CREATE INDEX IF NOT EXISTS idx_memories_category ON memories(category)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_memories_important ON memories(is_important)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_memories_starts_at ON memories(starts_at)")
+    c.execute(
+        "CREATE INDEX IF NOT EXISTS idx_memories_external_id ON memories(external_id)"
+    )
     c.execute("CREATE INDEX IF NOT EXISTS idx_actions_status ON actions(status)")
     conn.commit()
     conn.close()

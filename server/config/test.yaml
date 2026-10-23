@@ -8,3 +8,10 @@ storage_dir: "test_uploads"
 log_level: "WARNING"
 max_clients: 10
 telemetry_interval_seconds: 5
+
+# Rolling-window summarizer: journal -> hourly summary
+summary_model: "nvidia/nemotron-3-ultra-550b-a55b:free"
+summary_interval_seconds: 3600
+summary_window_seconds: 3600
+summary_retention_days: 30
+summary_daily_request_budget: 50

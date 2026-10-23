@@ -31,6 +31,18 @@ class Storage:
     def metadata_path(self, session_id: str) -> Path:
         return self.session_dir(session_id) / "metadata.json"
 
+    # -- rolling-window summarizer ---------------------------------------
+
+    @property
+    def journal_path(self) -> Path:
+        """Append-only JSONL journal of finalized transcript segments."""
+        return self.base_dir / "journal.jsonl"
+
+    @property
+    def summary_dir(self) -> Path:
+        """One JSON document per summarized window, plus the watermark."""
+        return self.base_dir / "summaries"
+
     def write_transcript(self, session_id: str, text: str) -> None:
         self.create_session_dir(session_id)
         self.transcript_path(session_id).write_text(text, encoding="utf-8")

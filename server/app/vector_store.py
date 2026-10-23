@@ -97,11 +97,29 @@ class ChromaVectorStore:
         # Fallback: keyword overlap in-memory
         return self._fallback.search(query, threshold, top_k)
 
-    def reset(self) -> None:
+    def count(self) -> int:
+        """How many vectors are stored (for diagnostics)."""
         self._initialize()
         if self._collection is not None:
             try:
-                self._collection.delete(where={})
+                return len(self._collection.get(include=[])["ids"])
+            except Exception:
+                return 0
+        return len(self._fallback.items)
+
+    def reset(self) -> None:
+        """Remove every vector from the collection.
+
+        ChromaDB rejects a delete with no ids and no filters, so the ids are
+        fetched first and passed explicitly.
+        """
+        self._initialize()
+        if self._collection is not None:
+            try:
+                existing = self._collection.get(include=[])
+                ids = existing.get("ids") or []
+                if ids:
+                    self._collection.delete(ids=ids)
             except Exception:
                 pass
         self._fallback = _MemoryStore()

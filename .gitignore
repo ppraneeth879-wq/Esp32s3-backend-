@@ -53,6 +53,7 @@ server/uploads/
 chroma_data/
 chroma-data/
 data/chromadb/
+server/data/
 chroma_cache/
 chroma-cache/
 .cache/chroma/

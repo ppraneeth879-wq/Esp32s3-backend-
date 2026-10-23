@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 import uuid
 from typing import Optional
 
@@ -19,6 +20,7 @@ from .session_manager import SessionManager
 from .storage import Storage
 from .transcription_engine import TranscriptResult
 from .transcription_queue import TranscriptionQueue
+from .transcript_log import TranscriptLog
 from .wav_writer import WAVWriter
 from .whisper_engine import WhisperEngine
 
@@ -32,11 +34,13 @@ class AudioWebSocket:
         session_manager: SessionManager,
         storage: Storage,
         broadcaster: Broadcaster,
+        journal: TranscriptLog | None = None,
     ):
         self.settings = settings
         self.session_manager = session_manager
         self.storage = storage
         self.broadcaster = broadcaster
+        self.journal = journal
 
     async def handle(self, ws: WebSocket) -> None:
         await ws.accept()
@@ -100,6 +104,20 @@ class AudioWebSocket:
                 session.full_transcript = (session.full_transcript + " " + text).strip()
                 # update transcript file
                 self.storage.write_transcript(session.session_id, session.full_transcript)
+
+                # Journal the finalized segment for the rolling-window
+                # summarizer. This is append-only and never drained.
+                if self.journal is not None:
+                    seg = result.segments[0] if result.segments else None
+                    self.journal.append_text(
+                        text=text,
+                        session_id=session.session_id,
+                        device_id=str(device_id),
+                        timestamp=time.time(),
+                        start_ms=int((seg.start if seg else 0) * 1000),
+                        end_ms=int((seg.end if seg else 0) * 1000),
+                    )
+
                 msg = {
                     "type": "transcript",
                     "session_id": session.session_id,
@@ -111,7 +129,7 @@ class AudioWebSocket:
                 }
                 asyncio.run_coroutine_threadsafe(self.broadcaster.broadcast(msg), loop)
                 # Feed the AI pipeline: decides if this is worth keeping and
-                # turns it into a memory and/or a task.
+                # turns it into a memory.
                 if pipeline is not None:
                     asyncio.run_coroutine_threadsafe(pipeline.feed(text), loop)
 

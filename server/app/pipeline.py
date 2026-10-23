@@ -237,6 +237,7 @@ class InsightPipeline:
         min_chars: int = 80,
         max_wait_seconds: float = 25.0,
         enabled: bool = True,
+        create_tasks: bool = False,
     ):
         self.broadcaster = broadcaster
         self.session_id = session_id
@@ -246,6 +247,10 @@ class InsightPipeline:
         self.min_chars = min_chars
         self.max_wait_seconds = max_wait_seconds
         self.enabled = enabled
+        # Auto-generated tasks are off by default. The hourly rolling-window
+        # summarizer is the mechanism for turning speech into something
+        # actionable; per-utterance task generation was noisy.
+        self.create_tasks = create_tasks
 
         self._buffer = ""          # pending, not yet analysed
         self._analysed = ""        # everything already analysed
@@ -328,7 +333,12 @@ class InsightPipeline:
 
     def _process(self, text: str, reason: str) -> Optional[dict[str, Any]]:
         """LLM analysis + persistence. Runs off the event loop."""
-        result = extract(text, model=self.model, threshold=self.threshold)
+        result = extract(
+            text,
+            model=self.model,
+            threshold=self.threshold,
+            create_tasks=self.create_tasks,
+        )
         if result is None:
             return None
 
@@ -358,7 +368,11 @@ class InsightPipeline:
         self._seen_hashes.add(h)
 
         memory = store_memory(result, text, self.session_id, h)
-        actions = store_actions(result, memory["id"] if memory else None, self.session_id)
+        actions = (
+            store_actions(result, memory["id"] if memory else None, self.session_id)
+            if self.create_tasks
+            else []
+        )
 
         logger.info(
             "insight[%s]: category=%s importance=%.2f memories=1 actions=%d",

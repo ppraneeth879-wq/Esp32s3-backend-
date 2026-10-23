@@ -48,10 +48,13 @@ void netTask(void* param) {
         }
         if (!wasConnected) {
             wasConnected = true;
-            Serial.printf("WiFi connected: %s\n", WiFi.localIP().toString().c_str());
+            Serial.printf("WiFi connected: %s (SSID %s)\n",
+                          WiFi.localIP().toString().c_str(),
+                          wifi.currentSsid());
         }
         if (!wsStarted) {
-            wsClient.begin(SERVER_IP, SERVER_PORT, WS_ENDPOINT);
+            // The server address depends on which network we are on.
+            wsClient.begin(wifi.currentServerIp(), SERVER_PORT, WS_ENDPOINT);
             wsStarted = true;
         }
         wsClient.loop();

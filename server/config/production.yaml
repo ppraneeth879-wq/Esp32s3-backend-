@@ -11,9 +11,17 @@ log_level: "INFO"
 max_clients: 100
 telemetry_interval_seconds: 5
 
-# Insight pipeline: speech -> AI judgement -> memory / task
+# Insight pipeline: speech -> AI judgement -> memory
 extraction_enabled: true
 extraction_model: "google/gemma-4-26b-a4b-it:free"
 importance_threshold: 0.4
 extraction_min_chars: 80
 extraction_max_wait_seconds: 25
+extraction_create_actions: false
+
+# Rolling-window summarizer: journal -> hourly summary
+summary_model: "nvidia/nemotron-3-ultra-550b-a55b:free"
+summary_interval_seconds: 3600
+summary_window_seconds: 3600
+summary_retention_days: 30
+summary_daily_request_budget: 50
